@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wanda</title>
+<style>
+:root{
+  --bg:#0b0608; --panel:#150a0f; --panel2:#1f0f17; --text:#f3e9ec; --muted:#a88e96;
+  --accent:#e0143c; --accent2:#ff4d6d; --border:#2e1822; --user:#3a0f1c; --bot:#180c12;
+  --glow:0 0 18px rgba(224,20,60,.45);
+}
+[data-theme="light"]{
+  --bg:#fbf5f6; --panel:#ffffff; --panel2:#f6e9ec; --text:#2a1519; --muted:#7d6168;
+  --accent:#c4102f; --accent2:#e0143c; --border:#ecd5da; --user:#fde3e8; --bot:#ffffff;
+  --glow:0 0 14px rgba(196,16,47,.25);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);display:flex;overflow:hidden}
+
+/* chaos magic aura */
+.aura{position:fixed;inset:-30%;z-index:0;pointer-events:none;opacity:.55;
+  background:
+    radial-gradient(circle at 30% 30%,rgba(224,20,60,.28),transparent 40%),
+    radial-gradient(circle at 70% 65%,rgba(255,77,109,.18),transparent 45%),
+    radial-gradient(circle at 50% 90%,rgba(120,0,30,.25),transparent 40%);
+  animation:swirl 28s linear infinite}
+[data-theme="light"] .aura{opacity:.25}
+@keyframes swirl{to{transform:rotate(360deg)}}
+
+.sidebar{position:relative;z-index:2;width:280px;background:var(--panel);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:14px;gap:12px;transition:transform .25s}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;letter-spacing:.5px}
+.brand svg{width:32px;height:32px;filter:drop-shadow(0 0 6px var(--accent))}
+
+.brand{cursor:pointer;display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;letter-spacing:.5px}.newchat{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:0;border-radius:12px;
+  padding:11px;font-size:15px;font-weight:600;cursor:pointer;box-shadow:var(--glow)}
+.newchat:hover{filter:brightness(1.1)}
+.label{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:4px}
+.chatlist{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.chatitem{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:9px 10px;border-radius:10px;
+  cursor:pointer;font-size:14px;color:var(--text)}
+.chatitem:hover{background:var(--panel2)}
+.chatitem.active{background:var(--panel2);box-shadow:inset 3px 0 0 var(--accent)}
+.chatitem span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.del{background:none;border:0;color:var(--muted);cursor:pointer;font-size:16px;opacity:0}
+.chatitem:hover .del{opacity:1}
+.del:hover{color:var(--accent2)}
+.sidefoot{display:flex;flex-direction:column;gap:8px;font-size:11px;color:var(--muted)}
+.theme{background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px;cursor:pointer;font-size:14px}
+
+.main{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--border);
+  background:color-mix(in srgb,var(--panel) 80%,transparent);backdrop-filter:blur(6px)}
+.menu{display:none;background:none;border:0;color:var(--text);font-size:22px;cursor:pointer}
+.title{font-weight:600}
+.messages{flex:1;overflow-y:auto;padding:24px 18px;display:flex;flex-direction:column;gap:16px}
+.msg{display:flex;max-width:820px;width:100%;margin:0 auto}
+.msg.user{justify-content:flex-end}
+.bubble{padding:12px 16px;border-radius:16px;line-height:1.55;max-width:88%;word-wrap:break-word;overflow-wrap:anywhere}
+.user .bubble{background:var(--user);white-space:pre-wrap;border-bottom-right-radius:4px}
+.assistant .bubble{background:var(--bot);border:1px solid var(--border);border-bottom-left-radius:4px;box-shadow:var(--glow)}
+.bubble pre{background:#0d0509;color:#f6dfe4;padding:12px;border-radius:10px;overflow-x:auto;margin:8px 0;font-size:13.5px}
+[data-theme="light"] .bubble pre{background:#2a1519}
+.bubble code{font-family:Consolas,monospace}
+.bubble :not(pre)>code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:.92em}
+.casting{color:var(--muted);font-style:italic;animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+
+.welcome{margin:auto;text-align:center;max-width:560px}
+.welcome svg{width:84px;height:84px;filter:drop-shadow(0 0 14px var(--accent));animation:float 4s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px)}}
+.welcome h1{margin:14px 0 6px;font-size:30px}
+.welcome p{color:var(--muted);margin-bottom:18px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:20px;cursor:pointer;font-size:14px}
+.chip:hover{border-color:var(--accent);box-shadow:var(--glow)}
+
+.composer{padding:14px 18px 18px}
+.box{max-width:820px;margin:0 auto;display:flex;gap:10px;align-items:flex-end;background:var(--panel);
+  border:1px solid var(--border);border-radius:18px;padding:8px 8px 8px 16px}
+.box:focus-within{border-color:var(--accent);box-shadow:var(--glow)}
+textarea{flex:1;background:none;border:0;outline:0;color:var(--text);font:inherit;resize:none;max-height:160px;padding:8px 0}
+.send{background:linear-gradient(135deg,var(--accent),var(--accent2));border:0;color:#fff;width:42px;height:42px;
+  border-radius:50%;cursor:pointer;font-size:18px}
+.send:disabled{opacity:.4;cursor:not-allowed}
+
+@media (max-width:760px){
+  .sidebar{position:fixed;inset:0 auto 0 0;transform:translateX(-100%)}
+  .sidebar.open{transform:none}
+  .menu{display:block}
+}
+@media (prefers-reduced-motion:reduce){.aura,.welcome svg,.casting{animation:none}}
+</style>
+</head>
+<body>
+<div class="aura"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <svg viewBox="0 0 64 64" fill="none" stroke="var(--accent2)" stroke-width="3">
+      <polygon points="32,4 56,18 56,46 32,60 8,46 8,18"/>
+      <polygon points="32,14 48,40 16,40" stroke-width="2.5"/>
+      <circle cx="32" cy="32" r="5" fill="var(--accent)" stroke="none"/>
+    </svg>
+    Wanda
+  </div>
+  <button class="newchat" id="newBtn">+ New chat</button>
+  <div class="label">History</div>
+  <div class="chatlist" id="chatlist"></div>
+  <div class="sidefoot">
+    <button class="theme" id="themeBtn">Light mode</button>
+    <div>Fan-inspired project, not affiliated with Marvel or Disney.</div>
+  </div>
+</aside>
+
+<section class="main">
+  <div class="topbar">
+    <button class="menu" id="menuBtn">☰</button>
+    <div class="title" id="title">Wanda</div>
+  </div>
+  <div class="messages" id="messages"></div>
+  <div class="composer">
+    <div class="box">
+      <textarea id="input" rows="1" placeholder="Ask Wanda anything..."></textarea>
+      <button class="send" id="sendBtn" title="Send">➤</button>
+    </div>
+  </div>
+</section>
+
+<script>
+const $ = s => document.querySelector(s);
+const msgs = $('#messages'), input = $('#input'), sendBtn = $('#sendBtn'), list = $('#chatlist');
+let currentChat = null, busy = false;
+
+/* ---------- safe text rendering (escape first, then format) ---------- */
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function render(text){
+  return text.split('```').map((p,i)=>{
+    if(i%2===1){
+      const nl = p.indexOf('\n');
+      const code = nl>-1 ? p.slice(nl+1) : p;
+      return '<pre><code>'+esc(code.replace(/\n$/,''))+'</code></pre>';
+    }
+    let h = esc(p);
+    h = h.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+    h = h.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
+    return h.replace(/\n/g,'<br>');
+  }).join('');
+}
+
+async function api(path, opts){
+  const r = await fetch('/api'+path, opts);
+  const data = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+/* ---------- messages ---------- */
+function addMsg(role, text){
+  const wrap = document.createElement('div'); wrap.className = 'msg '+role;
+  const b = document.createElement('div'); b.className = 'bubble';
+  if(role==='assistant') b.innerHTML = render(text); else b.textContent = text;
+  wrap.appendChild(b); msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+  return b;
+}
+
+function showWelcome(){
+  msgs.innerHTML = `
+    <div class="welcome">
+      <svg viewBox="0 0 64 64" fill="var(--accent2)" stroke="none">
+  <path d="M12 6 C20 20 26 30 32 34 C38 30 44 20 52 6 C58 30 54 46 44 58 C40 50 36 44 32 41 C28 44 24 50 20 58 C8 46 4 28 12 6 Z"/>
+</svg>
+      <h1>Wanda</h1>
+    </div>`;
+  $('#title').textContent = 'Wanda';
+}
+
+/* ---------- chat list ---------- */
+async function loadChats(){
+  const chats = await api('/chats');
+  list.innerHTML = '';
+  chats.forEach(c=>{
+    const item = document.createElement('div');
+    item.className = 'chatitem' + (c.id===currentChat ? ' active' : '');
+    const t = document.createElement('span'); t.textContent = c.title;
+    const d = document.createElement('button'); d.className='del'; d.textContent='✕'; d.title='Delete';
+    d.onclick = async e => { e.stopPropagation(); await deleteChat(c.id); };
+    item.onclick = () => openChat(c.id, c.title);
+    item.append(t, d); list.appendChild(item);
+  });
+}
+
+async function openChat(id, title){
+  currentChat = id;
+  const rows = await api('/chats/'+id);
+  msgs.innerHTML = '';
+  rows.forEach(m => addMsg(m.role, m.content));
+  $('#title').textContent = title || 'Wanda';
+  $('#sidebar').classList.remove('open');
+  loadChats();
+}
+
+async function deleteChat(id){
+  if(!confirm('Delete this chat?')) return;
+  await api('/chats/'+id, {method:'DELETE'});
+  if(id===currentChat){ currentChat = null; showWelcome(); }
+  loadChats();
+}
+
+function newChat(){ currentChat = null; showWelcome(); loadChats(); $('#sidebar').classList.remove('open'); input.focus(); }
+const WITCH_WORDS = [
+  'Casting', 'Weaving chaos', 'Bending reality', 'Conjuring',
+  'Channeling scarlet energy', 'Reading the runes', 'Consulting the grimoire',
+  'Hexing the answer', 'Summoning knowledge', 'Stirring the cauldron',
+  'Unraveling the spell', 'Scrying the answer'
+];
+function startWords(el){
+  let i = Math.floor(Math.random() * WITCH_WORDS.length);
+  const show = () => { el.textContent = WITCH_WORDS[i % WITCH_WORDS.length] + '...'; i++; };
+  show();
+  const t = setInterval(show, 1800);
+  return () => clearInterval(t);
+}
+/* ---------- send ---------- */
+async function send(){
+  const text = input.value.trim();
+  if(!text || busy) return;
+  busy = true; sendBtn.disabled = true;
+  input.value = ''; input.style.height = 'auto';
+  let stopWords = () => {};
+  try{
+    if(currentChat===null){
+      const c = await api('/chats', {method:'POST'});
+      currentChat = c.id; msgs.innerHTML = '';
+    }
+    addMsg('user', text);
+    const wait = addMsg('assistant', ''); wait.classList.add('casting');
+    stopWords = startWords(wait);
+    try{
+      const r = await fetch('/api/chats/'+currentChat+'/message', {
+        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:text})});
+      if(!r.ok){ const e = await r.json().catch(()=>({})); throw new Error(e.error || 'Request failed'); }
+      const reader = r.body.getReader(), dec = new TextDecoder();
+      let full = '', first = true;
+      while(true){
+        const {done, value} = await reader.read();
+        if(done) break;
+        if(first){ stopWords(); wait.classList.remove('casting'); first = false; }
+        full += dec.decode(value, {stream:true});
+        wait.innerHTML = render(full);
+        msgs.scrollTop = msgs.scrollHeight;
+      }
+      if(first){ stopWords(); wait.classList.remove('casting'); wait.textContent = '(no answer)'; }
+    }catch(err){
+      stopWords(); wait.classList.remove('casting');
+      wait.textContent = 'Something went wrong: '+err.message;
+    }
+    msgs.scrollTop = msgs.scrollHeight;
+    loadChats();
+  }catch(err){ alert(err.message); }
+  busy = false; sendBtn.disabled = false; input.focus();
+}
+
+/* ---------- events ---------- */
+sendBtn.onclick = send;
+input.addEventListener('keydown', e => { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); }});
+input.addEventListener('input', () => { input.style.height='auto'; input.style.height = Math.min(input.scrollHeight,160)+'px'; });
+$('#newBtn').onclick = newChat;
+$('.brand').onclick = newChat;
+$('#menuBtn').onclick = () => $('#sidebar').classList.toggle('open');
+
+/* ---------- theme ---------- */
+function setTheme(t){
+  document.documentElement.dataset.theme = t;
+  $('#themeBtn').textContent = t==='dark' ? 'Light mode' : 'Dark mode';
+  try{ localStorage.setItem('wanda-theme', t); }catch(e){}
+}
+$('#themeBtn').onclick = () => setTheme(document.documentElement.dataset.theme==='dark' ? 'light' : 'dark');
+let saved = null; try{ saved = localStorage.getItem('wanda-theme'); }catch(e){}
+setTheme(saved || 'dark');
+
+showWelcome(); loadChats();
+</script>
+</body>
+</html>
